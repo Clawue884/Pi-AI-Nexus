@@ -1,0 +1,22 @@
+from web3 import Web3
+import os
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+import secrets
+
+# Koneksi ke Pi Blockchain
+PI_RPC_URL = "https://api.pi-blockchain.com"
+web3 = Web3(Web3.HTTPProvider(PI_RPC_URL))
+
+# Validasi koneksi
+if not web3.is_connected():
+    raise Exception("Gagal terhubung ke Pi Blockchain!")
+
+# Kunci enkripsi kuantum (AES-512)
+AES_KEY = secrets.token_bytes(64)  # AES-512
+IV = secrets.token_bytes(16)
+
+def encrypt_data(data):
+    """ Enkripsi data dengan AES-512 """
+    cipher = Cipher(algorithms.AES(AES_KEY), modes.CBC(IV))
+    encryptor = cipher.encryptor()
+    return encryptor.update(data.encode()) + encryptor.finalize()
