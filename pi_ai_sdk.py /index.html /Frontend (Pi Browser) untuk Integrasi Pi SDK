@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi-AI SDK</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+        let userAddress = "";
+        let accessToken = "";
+
+        async function authenticate() {
+            Pi.authenticate(["username", "payments"], (success) => {
+                userAddress = success.user.uid;
+                accessToken = success.accessToken;
+                document.getElementById("wallet").innerText = "Login sukses: " + userAddress;
+            }, (error) => {
+                console.error(error);
+            });
+        }
+
+        async function checkBalance() {
+            let response = await fetch(`http://localhost:8000/balance/${userAddress}`);
+            let data = await response.json();
+            document.getElementById("balance").innerText = "Saldo: " + data.balance + " Pi";
+        }
+
+        async function sendTransaction() {
+            let recipient = document.getElementById("recipient").value;
+            let amount = document.getElementById("amount").value;
+
+            let response = await fetch("http://localhost:8000/send_transaction", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ sender: userAddress, recipient, amount })
+            });
+
+            let data = await response.json();
+            document.getElementById("tx_result").innerText = "Transaksi Hash: " + data.tx_hash;
+        }
+
+        async function askAI() {
+            let question = document.getElementById("ai_query").value;
+
+            let response = await fetch("http://localhost:8000/ai_query", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ question })
+            });
+
+            let data = await response.json();
+            document.getElementById("ai_response").innerText = "AI Jawaban: " + data.response;
+        }
+    </script>
+</head>
+<body>
+    <h2>🚀 Pi-AI SDK: Integrasi AI + Pi Wallet</h2>
+
+    <button onclick="authenticate()">Login dengan Pi</button>
+    <p id="wallet"></p>
+
+    <h3>🔍 Cek Saldo Pi</h3>
+    <button onclick="checkBalance()">Cek Saldo</button>
+    <p id="balance"></p>
+
+    <h3>💸 Kirim Transaksi Pi</h3>
+    <input type="text" id="recipient" placeholder="Alamat Penerima" />
+    <input type="number" id="amount" placeholder="Jumlah Pi" />
+    <button onclick="sendTransaction()">Kirim</button>
+    <p id="tx_result"></p>
+
+    <h3>🧠 Tanya AI tentang Blockchain Pi</h3>
+    <input type="text" id="ai_query" placeholder="Tanyakan sesuatu..." />
+    <button onclick="askAI()">Tanya AI</button>
+    <p id="ai_response"></p>
+</body>
+</html>
