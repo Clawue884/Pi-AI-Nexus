@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi-Biometric Auth</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fingerprintjs/3.3.6/fingerprint2.min.js"></script>
+    <script>
+        let userId = "";
+        let fingerprintData = "";
+
+        async function getFingerprint() {
+            return new Promise((resolve) => {
+                Fingerprint2.get((components) => {
+                    let values = components.map((component) => component.value);
+                    let fingerprint = values.join("");
+                    resolve(fingerprint);
+                });
+            });
+        }
+
+        async function authenticate() {
+            Pi.authenticate(["username", "payments"], async (success) => {
+                userId = success.user.uid;
+                fingerprintData = await getFingerprint();
+
+                let response = await fetch("http://localhost:8000/authenticate_biometric", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ user_id: userId, fingerprint_data: fingerprintData })
+                });
+
+                let data = await response.json();
+                if (data.status === "authenticated") {
+                    document.getElementById("status").innerText = "✅ Autentikasi Sidik Jari Berhasil!";
+                } else {
+                    document.getElementById("status").innerText = "❌ Gagal Autentikasi!";
+                }
+            });
+        }
+
+        async function sendTransaction() {
+            let recipient = document.getElementById("recipient").value;
+            let amount = document.getElementById("amount").value;
+
+            let response = await fetch("http://localhost:8000/send_transaction", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ sender: userId, recipient, amount })
+            });
+
+            let data = await response.json();
+            document.getElementById("tx_result").innerText = "Transaksi Hash: " + data.tx_hash;
+        }
+    </script>
+</head>
+<body>
+    <h2>🚀 Pi-Biometric Auth: Sidik Jari + Dompet Pi</h2>
+
+    <button onclick="authenticate()">🔐 Login dengan Sidik Jari</button>
+    <p id="status"></p>
+
+    <h3>💸 Kirim Transaksi Pi</h3>
+    <input type="text" id="recipient" placeholder="Alamat Penerima" />
+    <input type="number" id="amount" placeholder="Jumlah Pi" />
+    <button onclick="sendTransaction()">Kirim</button>
+    <p id="tx_result"></p>
+</body>
+</html>
