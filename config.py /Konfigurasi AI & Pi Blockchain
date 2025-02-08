@@ -1,0 +1,15 @@
+from web3 import Web3
+import os
+from cryptography.fernet import Fernet
+
+# Koneksi ke Pi Blockchain
+PI_RPC_URL = "https://api.pi-blockchain.com"
+web3 = Web3(Web3.HTTPProvider(PI_RPC_URL))
+
+# Cek koneksi ke blockchain
+if not web3.is_connected():
+    raise Exception("Gagal terhubung ke Pi Blockchain!")
+
+# Kunci enkripsi AI
+AES_KEY = os.getenv("AES_KEY", Fernet.generate_key())
+cipher = Fernet(AES_KEY)
