@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>PiWeb3: Manajemen Transaksi Pi</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.0.3/web3.min.js"></script>
+    <script>
+        const web3 = new Web3("https://api.pi-network.io");
+
+        async function sendTransaction() {
+            let sender = document.getElementById("sender").value;
+            let recipient = document.getElementById("recipient").value;
+            let amount = document.getElementById("amount").value;
+
+            let response = await fetch("http://localhost:8000/send_transaction", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ sender, recipient, amount })
+            });
+
+            let data = await response.json();
+            document.getElementById("tx_result").innerText = "Transaksi Hash: " + data.tx_hash;
+        }
+
+        async function executeContract() {
+            let sender = document.getElementById("contract_sender").value;
+            let functionName = document.getElementById("contract_function").value;
+            let args = document.getElementById("contract_args").value.split(",");
+
+            let response = await fetch("http://localhost:8000/execute_contract", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ sender, function: functionName, args })
+            });
+
+            let data = await response.json();
+            document.getElementById("contract_result").innerText = "Kontrak Eksekusi Hash: " + data.tx_hash;
+        }
+    </script>
+</head>
+<body>
+    <h2>🚀 PiWeb3: Manajemen Transaksi & Smart Contract Pi Blockchain</h2>
+
+    <h3>💸 Kirim Transaksi Pi</h3>
+    <input type="text" id="sender" placeholder="Alamat Pengirim" />
+    <input type="text" id="recipient" placeholder="Alamat Penerima" />
+    <input type="number" id="amount" placeholder="Jumlah Pi" />
+    <button onclick="sendTransaction()">Kirim</button>
+    <p id="tx_result"></p>
+
+    <h3>⚙️ Eksekusi Kontrak Pintar</h3>
+    <input type="text" id="contract_sender" placeholder="Alamat Pengirim" />
+    <input type="text" id="contract_function" placeholder="Nama Fungsi Kontrak" />
+    <input type="text" id="contract_args" placeholder="Argumen (pisahkan dengan koma)" />
+    <button onclick="executeContract()">Eksekusi</button>
+    <p id="contract_result"></p>
+</body>
+</html>
