@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi-RAG: AI + Retrieval</title>
+    <script>
+        async function askAI() {
+            let query = document.getElementById("query").value;
+            let responseBox = document.getElementById("response");
+            responseBox.innerHTML = "Sedang berpikir...";
+
+            let response = await fetch("http://localhost:8000/rag", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ query: query })
+            });
+
+            let data = await response.json();
+            responseBox.innerHTML = "<b>Jawaban:</b> " + data.response;
+        }
+    </script>
+</head>
+<body>
+    <h2>Pi-RAG: Generatif AI + Retrieval</h2>
+    <input type="text" id="query" placeholder="Tanyakan sesuatu tentang Pi Network..." />
+    <button onclick="askAI()">Tanya</button>
+    <div id="response"></div>
+</body>
+</html>
