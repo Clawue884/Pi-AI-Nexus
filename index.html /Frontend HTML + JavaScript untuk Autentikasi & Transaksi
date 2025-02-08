@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>PiSecureDB</title>
+    <script>
+        async function registerUser() {
+            let username = document.getElementById("reg_username").value;
+            let password = document.getElementById("reg_password").value;
+
+            let response = await fetch("http://localhost:8000/register", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({username, password})
+            });
+
+            let result = await response.json();
+            alert(result.message);
+        }
+
+        async function loginUser() {
+            let username = document.getElementById("login_username").value;
+            let password = document.getElementById("login_password").value;
+
+            let response = await fetch("http://localhost:8000/login", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({username, password})
+            });
+
+            let result = await response.json();
+            alert(result.message);
+        }
+
+        async function sendTransaction() {
+            let sender = document.getElementById("sender").value;
+            let recipient = document.getElementById("recipient").value;
+            let amount = document.getElementById("amount").value;
+
+            let response = await fetch("http://localhost:8000/send_transaction", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ sender, recipient, amount })
+            });
+
+            let result = await response.json();
+            alert("Transaksi berhasil: " + result.tx_id);
+        }
+    </script>
+</head>
+<body>
+    <h2>🚀 PiSecureDB: Sistem MongoDB Terenkripsi</h2>
+
+    <h3>🛡️ Registrasi</h3>
+    <input type="text" id="reg_username" placeholder="Username">
+    <input type="password" id="reg_password" placeholder="Password">
+    <button onclick="registerUser()">Daftar</button>
+
+    <h3>🔐 Login</h3>
+    <input type="text" id="login_username" placeholder="Username">
+    <input type="password" id="login_password" placeholder="Password">
+    <button onclick="loginUser()">Masuk</button>
+
+    <h3>💸 Kirim Transaksi</h3>
+    <input type="text" id="sender" placeholder="Alamat Pengirim">
+    <input type="text" id="recipient" placeholder="Alamat Penerima">
+    <input type="number" id="amount" placeholder="Jumlah Pi">
+    <button onclick="sendTransaction()">Kirim</button>
+</body>
+</html>
