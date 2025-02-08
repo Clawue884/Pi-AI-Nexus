@@ -1,0 +1,61 @@
+from fastapi import FastAPI
+from pydantic import BaseModel
+import openai
+import requests
+from web3 import Web3
+from pymongo import MongoClient
+
+# Inisialisasi FastAPI
+app = FastAPI()
+
+# Koneksi ke MongoDB (Database transaksi)
+client = MongoClient("mongodb://localhost:27017/")
+db = client["pi_ai_db"]
+transactions = db["transactions"]
+
+# API Key OpenAI untuk AI Generatif
+openai.api_key = "YOUR_OPENAI_API_KEY"
+
+# Inisialisasi Web3 untuk koneksi ke Pi Blockchain
+web3 = Web3(Web3.HTTPProvider("https://api.pi-network.io"))
+
+# Kontrak pintar (contoh address)
+CONTRACT_ADDRESS = "0x1234567890abcdef1234567890abcdef12345678"
+CONTRACT_ABI = []  # Tambahkan ABI Kontrak di sini
+
+# Inisialisasi Kontrak Pi
+contract = web3.eth.contract(address=CONTRACT_ADDRESS, abi=CONTRACT_ABI)
+
+# Class Input
+class TransactionRequest(BaseModel):
+    sender: str
+    recipient: str
+    amount: float
+
+# API untuk Mengecek Saldo Pi Wallet
+@app.get("/balance/{address}")
+async def get_balance(address: str):
+    balance = web3.eth.get_balance(address)
+    return {"address": address, "balance": web3.from_wei(balance, "ether")}
+
+# API untuk Mengirim Transaksi Pi
+@app.post("/send_transaction")
+async def send_transaction(tx: TransactionRequest):
+    tx_hash = contract.functions.transfer(tx.recipient, web3.to_wei(tx.amount, "ether")).transact({"from": tx.sender})
+    transactions.insert_one({"sender": tx.sender, "recipient": tx.recipient, "amount": tx.amount, "tx_hash": tx_hash.hex()})
+    return {"status": "success", "tx_hash": tx_hash.hex()}
+
+# API untuk AI Generatif Menjawab Pertanyaan Blockchain
+@app.post("/ai_query")
+async def ai_query(query: dict):
+    response = openai.ChatCompletion.create(
+        model="gpt-4-turbo",
+        messages=[{"role": "system", "content": "Anda adalah AI Blockchain yang menjawab tentang transaksi Pi Network."},
+                  {"role": "user", "content": query["question"]}]
+    )
+    return {"response": response["choices"][0]["message"]["content"]}
+
+# Jalankan server
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
