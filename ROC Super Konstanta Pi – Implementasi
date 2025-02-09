@@ -1,0 +1,63 @@
+from mpmath import mp
+from fractions import Fraction
+import cmath
+import struct
+from Crypto.Cipher import AES
+import hashlib
+from web3 import Web3
+
+# 🎯 1️⃣ Pi dengan Presisi Tinggi (1000 Digit)
+mp.dps = 1000  
+pi_high_precision = mp.pi  
+
+# 🎯 2️⃣ Pi dalam Bentuk Pecahan Rasional
+pi_fraction = Fraction(str(mp.pi)).limit_denominator(10**10)
+
+# 🎯 3️⃣ Pi dalam Bilangan Kompleks
+complex_pi = cmath.pi + 1j * cmath.e
+
+# 🎯 4️⃣ Pi dalam Format Biner & Hexadecimal
+binary_pi = bin(struct.unpack('!I', struct.pack('!f', 3.141592653589793))[0])
+hex_pi = hex(struct.unpack('!I', struct.pack('!f', 3.141592653589793))[0])
+
+# 🎯 5️⃣ Pi dalam Format Terenkripsi AES
+key = hashlib.sha256(b"pi_secret_key").digest()
+cipher = AES.new(key, AES.MODE_ECB)
+
+# Pi dalam bentuk string dienkripsi
+pi_str = f"{mp.pi:.32f}".encode('utf-8')
+pi_padded = pi_str.ljust(32, b'\0')  # Padding agar sesuai blok 16/32 byte
+
+encrypted_pi = cipher.encrypt(pi_padded)
+
+# 🎯 6️⃣ Integrasi Pi Blockchain – Smart Contract AI
+w3 = Web3(Web3.HTTPProvider("https://node.pi-blockchain.com"))
+
+smart_contract = '''
+pragma solidity ^0.8.0;
+
+contract PiAI {
+    function calculatePi() public pure returns (string memory) {
+        return "3.141592653589793238462643383279";
+    }
+}
+'''
+
+# 🎯 7️⃣ Web3.js untuk Transaksi Pi Blockchain
+transaction_data = {
+    "to": "0x123456789abcdef",
+    "value": w3.toWei(3.14, "ether"),
+    "gas": 21000,
+    "gasPrice": w3.toWei(10, "gwei"),
+    "nonce": w3.eth.get_transaction_count("0xYourAddress"),
+}
+
+# 🔥 OUTPUT SUPER KONSTANTA PI
+print(f"📌 Pi dengan Presisi 1000 Digit:\n{pi_high_precision}\n")
+print(f"📌 Pi dalam Pecahan Rasional:\n{pi_fraction}\n")
+print(f"📌 Pi dalam Bilangan Kompleks:\n{complex_pi}\n")
+print(f"📌 Pi dalam Format Biner: {binary_pi}")
+print(f"📌 Pi dalam Format Hexadecimal: {hex_pi}\n")
+print(f"📌 Pi Terenkripsi AES:\n{encrypted_pi.hex()}\n")
+print(f"📌 Smart Contract AI untuk Pi Blockchain:\n{smart_contract}\n")
+print(f"📌 Data Transaksi Pi Blockchain:\n{transaction_data}\n")
